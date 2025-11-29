@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Redirigiendo...</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    <h2>Estamos redirigiendo...</h2>
+    <p>Por favor espera 5 segundos</p>
+  </div>
+
+  <script>
+    const API_URL = "https://olndh6z7eh.execute-api.us-east-1.amazonaws.com/prod";
+
+    async function redirectUser() {
+      const code = window.location.pathname.split("/").pop();
+
+      const res = await fetch(`${API_URL}/${code}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        document.body.innerHTML = "<h2>❌ Enlace no encontrado</h2>";
+        return;
+      }
+
+      setTimeout(() => {
+        window.location.href = data.long_url;
+      }, 5000);
+    }
+
+    redirectUser();
+  </script>
+
+</body>
+</html>

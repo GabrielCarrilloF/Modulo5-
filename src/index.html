@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Acortador de URLs</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    <h1>Acortador de Enlaces</h1>
+
+    <form id="shortenForm">
+      <input type="url" id="urlInput" placeholder="Ingresa tu URL aquí" required>
+      <button type="submit">Acortar</button>
+    </form>
+
+    <div id="result" class="hidden">
+      <p>Tu enlace acortado es:</p>
+      <input type="text" id="shortUrl" readonly>
+      <button id="copyBtn">Copiar</button>
+    </div>
+
+    <p id="errorMsg" class="error hidden"></p>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
