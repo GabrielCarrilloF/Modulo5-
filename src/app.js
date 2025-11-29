@@ -1,53 +1,95 @@
-const API_URL = "https://olndh6z7eh.execute-api.us-east-1.amazonaws.com/prod";
-const FRONTEND_DOMAIN =
-  "https://shorten.com";
+document.addEventListener("DOMContentLoaded", function () {
+  const API_URL = "https://olndh6z7eh.execute-api.us-east-1.amazonaws.com/prod";
+  const FRONTEND_DOMAIN = "https://shorter.com";
 
-document.getElementById("shortenForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const urlInput = document.getElementById("urlInput").value;
-  const errorMsg = document.getElementById("errorMsg");
-  const resultDiv = document.getElementById("result");
+  const shortenForm = document.getElementById("shortenForm");
+  const urlInput = document.getElementById("urlInput");
+  const resultContainer = document.getElementById("result");
   const shortUrlInput = document.getElementById("shortUrl");
+  const copyBtn = document.getElementById("copyBtn");
+  const goBtn = document.getElementById("goBtn");
+  const shortUrlInputField = document.getElementById("shortUrlInput");
+  const errorMsg = document.getElementById("errorMsg");
+  const errorText = document.createElement("span");
 
-  errorMsg.classList.add("hidden");
-  resultDiv.classList.add("hidden");
 
-  try {
-    const response = await fetch(`${API_URL}/shorten`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ url: urlInput }), 
-    });
+  errorMsg.appendChild(errorText);
+  function hideError() {
+    errorMsg.classList.add("hidden");
+    errorText.textContent = "";
+  }
+  function showError(message) {
+    errorText.textContent = message;
+    errorMsg.classList.remove("hidden");
+  }
+  shortenForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    hideError();
 
-    
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
-      errorMsg.textContent = data.message || "Error al acortar URL";
-      errorMsg.classList.remove("hidden");
+    const longUrl = urlInput.value.trim();
+    if (!longUrl) {
+      showError("❌ Ingresa una URL válida");
       return;
     }
 
-    const data = await response.json();
+    try {
+      const res = await fetch(`${API_URL}/shorten`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ originalUrl: longUrl })
+      });
 
-    
-    const shortUrl = `${FRONTEND_DOMAIN}/short/${data.code}`;
+      const data = await res.json();
 
-    shortUrlInput.value = shortUrl;
-    resultDiv.classList.remove("hidden");
-  } catch (error) {
-    console.error("Fetch error:", error);
-    errorMsg.textContent = "Error de red. Intenta de nuevo";
-    errorMsg.classList.remove("hidden");
-  }
-});
+      if (!res.ok) {
+        showError(data.message || "⚠️ Error al acortar");
+        return;
+      }
 
-document.getElementById("copyBtn").addEventListener("click", () => {
-  const input = document.getElementById("shortUrl");
-  input.select();
-  input.setSelectionRange(0, 99999);
-  document.execCommand("copy");
-  alert("¡Copiado!");
+      const finalShortUrl = `${FRONTEND_DOMAIN}/short/${data.code}`;
+
+      shortUrlInput.value = finalShortUrl;
+      resultContainer.classList.remove("hidden");
+
+    } catch (error) {
+      showError("⚠️ Error de conexión con el servidor");
+    }
+  });
+  copyBtn.addEventListener("click", () => {
+    shortUrlInput.select();
+    navigator.clipboard.writeText(shortUrlInput.value);
+
+    const originalText = copyBtn.textContent;
+    copyBtn.textContent = "¡Copiado! ✔️";
+    copyBtn.style.backgroundColor = "#00cc66";
+
+    setTimeout(() => {
+      copyBtn.textContent = originalText;
+      copyBtn.style.backgroundColor = "";
+    }, 1500);
+  });
+
+  goBtn.addEventListener("click", () => {
+    hideError();
+
+    const shortUrl = shortUrlInputField.value.trim();
+    if (!shortUrl) return showError("⚠️ Ingresa un enlace acortado");
+
+    try {
+      const urlObj = new URL(shortUrl);
+      const parts = urlObj.pathname.split("/");
+      const code = parts.pop() || parts.pop();
+
+      if (!code) {
+        showError("❌ Enlace acortado inválido");
+        return;
+      }
+
+      window.location.href = `/short/${code}`;
+
+    } catch (error) {
+      showError("⚠️ Formato de enlace incorrecto");
+    }
+  });
+
 });

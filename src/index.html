@@ -2,28 +2,91 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Acortador de URLs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acortador de URLs - Módulo 5</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
   <div class="container">
-    <h1>Acortador de Enlaces</h1>
+    <header>
+      <h1><i class="fas fa-link"></i> Acortador de Enlaces</h1>
+      <p class="subtitle">Simplifica tus URLs largas y comparte fácilmente</p>
+    </header>
 
-    <form id="shortenForm">
-      <input type="url" id="urlInput" placeholder="Ingresa tu URL aquí" required>
-      <button type="submit">Acortar</button>
-    </form>
+    <main>
+      <!-- SECCIÓN PARA ACORTAR URL -->
+      <section id="shorten-section">
+        <h2><i class="fas fa-compress-alt"></i> Acortar un nuevo enlace</h2>
+        <form id="shortenForm">
+          <div class="form-group">
+            <label for="urlInput">URL original</label>
+            <input 
+              type="url" 
+              id="urlInput" 
+              placeholder="https://ejemplo.com/ruta-muy-larga-y-complicada"
+              required
+            >
+          </div>
+          <button type="submit" class="btn">
+            <i class="fas fa-magic"></i> Acortar URL
+          </button>
+        </form>
 
-    <div id="result" class="hidden">
-      <p>Tu enlace acortado es:</p>
-      <input type="text" id="shortUrl" readonly>
-      <button id="copyBtn">Copiar</button>
-    </div>
+        <!-- RESULTADO DEL ACORTADOR -->
+        <div id="result" class="result-container">
+          <div class="result-header">
+            <i class="fas fa-check-circle"></i>
+            <h3>¡Enlace acortado con éxito!</h3>
+          </div>
+          <div class="result-content">
+            <input type="text" id="shortUrl" readonly>
+            <button id="copyBtn" class="btn btn-success">
+              <i class="far fa-copy"></i> Copiar
+            </button>
+          </div>
+        </div>
+      </section>
 
-    <p id="errorMsg" class="error hidden"></p>
+      <div class="divider"></div>
+
+      <!-- SECCIÓN PARA VALIDAR URL ACORTADA -->
+      <section id="expand-section">
+        <h2><i class="fas fa-external-link-alt"></i> ¿Ya tienes un enlace corto?</h2>
+        <div class="form-group">
+          <label for="shortUrlInput">URL acortada</label>
+          <input 
+            type="url" 
+            id="shortUrlInput" 
+            placeholder="https://acortador.com/abc123"
+          >
+        </div>
+        <button id="goBtn" class="btn btn-secondary">
+          <i class="fas fa-external-link-alt"></i> Abrir enlace
+        </button>
+
+        <!-- MENSAJE DE ERROR -->
+        <div id="errorMsg" class="error-message">
+          <i class="fas fa-exclamation-circle"></i>
+          <span id="errorText">Ha ocurrido un error. Por favor, inténtalo de nuevo.</span>
+        </div>
+      </section>
+
+      <!-- INSTRUCCIONES -->
+      <div class="instructions">
+        <h3>¿Cómo funciona?</h3>
+        <ul>
+          <li>Pega tu URL larga en el primer campo y haz clic en "Acortar URL"</li>
+          <li>Copia el enlace acortado resultante y compártelo donde quieras</li>
+          <li>Si ya tienes un enlace acortado, pégalo en el segundo campo para abrirlo</li>
+        </ul>
+      </div>
+    </main>
+
+    <footer>
+      <p>Acortador de URLs - Módulo 5 &copy; 2023</p>
+    </footer>
   </div>
-
   <script src="app.js"></script>
 </body>
 </html>
