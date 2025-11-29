@@ -1,53 +1,97 @@
-const API_URL = "https://olndh6z7eh.execute-api.us-east-1.amazonaws.com/prod";
-const FRONTEND_DOMAIN =
-  "https://shorten";
+document.addEventListener("DOMContentLoaded", function () {
 
-document.getElementById("shortenForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
+  const API_URL = "https://olndh6z7eh.execute-api.us-east-1.amazonaws.com/prod";
 
-  const urlInput = document.getElementById("urlInput").value;
-  const errorMsg = document.getElementById("errorMsg");
-  const resultDiv = document.getElementById("result");
+  const shortenForm = document.getElementById("shortenForm");
+  const urlInput = document.getElementById("urlInput");
+  const resultContainer = document.getElementById("result");
   const shortUrlInput = document.getElementById("shortUrl");
+  const copyBtn = document.getElementById("copyBtn");
+  const goBtn = document.getElementById("goBtn");
+  const shortUrlInputField = document.getElementById("shortUrlInput");
+  const errorMsg = document.getElementById("errorMsg");
 
-  errorMsg.classList.add("hidden");
-  resultDiv.classList.add("hidden");
+  function showError(message) {
+    errorMsg.textContent = message;
+    errorMsg.classList.remove("hidden");
+  }
 
-  try {
-    const response = await fetch(`${API_URL}/shorten`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ url: urlInput }), 
-    });
+  function hideError() {
+    errorMsg.classList.add("hidden");
+    errorMsg.textContent = "";
+  }
 
-    
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
-      errorMsg.textContent = data.message || "Error al acortar URL";
-      errorMsg.classList.remove("hidden");
+  // ➤ ENVIAR URL ORIGINAL → OBTENER URL CORTA
+  shortenForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    hideError();
+
+    const longUrl = urlInput.value.trim();
+    if (!longUrl) {
+      showError("⚠️ Ingresa una URL válida");
       return;
     }
 
-    const data = await response.json();
+    try {
+      const res = await fetch(`${API_URL}/shorten`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: longUrl }) // 👈 tu API requiere "url"
+      });
 
-    
-    const shortUrl = `${FRONTEND_DOMAIN}/short/${data.code}`;
+      const data = await res.json();
 
-    shortUrlInput.value = shortUrl;
-    resultDiv.classList.remove("hidden");
-  } catch (error) {
-    console.error("Fetch error:", error);
-    errorMsg.textContent = "Error de red. Intenta de nuevo";
-    errorMsg.classList.remove("hidden");
-  }
-});
+      if (!res.ok) {
+        showError(data.message || "❌ No se pudo acortar");
+        return;
+      }
 
-document.getElementById("copyBtn").addEventListener("click", () => {
-  const input = document.getElementById("shortUrl");
-  input.select();
-  input.setSelectionRange(0, 99999);
-  document.execCommand("copy");
-  alert("¡Copiado!");
+      // Mostrar el enlace corto que devuelve tu API ✔
+      shortUrlInput.value = data.short_url;
+      resultContainer.classList.remove("hidden");
+
+    } catch (err) {
+      showError("❌ Error al conectar con el servidor");
+    }
+  });
+
+  // ➤ COPIAR EL LINK CORTO
+  copyBtn.addEventListener("click", () => {
+    shortUrlInput.select();
+    navigator.clipboard.writeText(shortUrlInput.value);
+    copyBtn.textContent = "¡Copiado! ✔";
+    setTimeout(() => (copyBtn.textContent = "Copiar"), 1500);
+  });
+
+  // ➤ PEGAN URL CORTA → CONSULTAR EN API → ABRIR URL REAL
+  goBtn.addEventListener("click", async () => {
+    hideError();
+
+    const shortUrl = shortUrlInputField.value.trim();
+    if (!shortUrl) {
+      showError("⚠️ Ingresa una URL acortada");
+      return;
+    }
+
+    try {
+      // Extraemos el código del final del enlace
+      const urlObj = new URL(shortUrl);
+      const code = urlObj.pathname.replace("/", "");
+
+      const res = await fetch(`${API_URL}/${code}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        showError("❌ Enlace no encontrado en el acortador");
+        return;
+      }
+
+      // Abrir la URL real que devolvió la API ✔
+      window.open(data.long_url, "_blank");
+
+    } catch (err) {
+      showError("⚠️ Formato de enlace incorrecto");
+    }
+  });
+
 });
